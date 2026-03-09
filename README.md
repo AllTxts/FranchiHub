@@ -161,6 +161,3 @@ Fullstack Developer
 
 📄 License
 - This project is licensed under the MIT License - see the LICENSE file in backend and frontend folder for details.
-
-
-## 📁 Project Structure

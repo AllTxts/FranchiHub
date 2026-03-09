@@ -1,0 +1,6 @@
+services:
+  franchisemanager.api:
+    image: ${DOCKER_REGISTRY-}franchisemanagerapi
+    build:
+      context: .
+      dockerfile: FranchiseManager.API/Dockerfile

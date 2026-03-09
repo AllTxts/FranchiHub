@@ -11,8 +11,8 @@ namespace FranchiseManager.API.Database
         // DbSet represents a TABLE in the database
         // Here we say: "I want a table called Franchises based on the Franchise model"
         public DbSet<Franchise> Franchises { get; set; }
-        //public DbSet<Branch> Branches { get; set; }
-        //public DbSet<Product> Products { get; set; }
+        public DbSet<Branch> Branches { get; set; }
+        public DbSet<Product> Products { get; set; }
 
         // CONSTRUCTOR - Executes when a DbContext instance is created
         // DbContextOptions contains configuration (connection string, etc.)
@@ -56,18 +56,18 @@ namespace FranchiseManager.API.Database
 
             // Configure relationships between tables
             // Relationship: Branch (many) -> Franchise (one)
-         //   modelBuilder.Entity<Branch>()
-         //       .HasOne(b => b.Franchise)           // A branch has one franchise
-         //       .WithMany(f => f.Branches)          // A franchise has many branches
-         //       .HasForeignKey(b => b.FranchiseId)  // The foreign key is FranchiseId
-         //       .OnDelete(DeleteBehavior.Cascade);  // If the franchise is deleted, its branches are also deleted
+            modelBuilder.Entity<Branch>()
+                .HasOne(b => b.Franchise)           // A branch has one franchise
+                .WithMany(f => f.Branches)          // A franchise has many branches
+                .HasForeignKey(b => b.FranchiseId)  // The foreign key is FranchiseId
+                .OnDelete(DeleteBehavior.Cascade);  // If the franchise is deleted, its branches are also deleted
 
             // Relationship: Product (many) -> Branch (one)
-         //   modelBuilder.Entity<Product>()
-         //       .HasOne(p => p.Branch)               // A product has one branch
-         //       .WithMany(b => b.Products)           // A branch has many products
-         //       .HasForeignKey(p => p.BranchId)      // The foreign key is BranchId
-         //       .OnDelete(DeleteBehavior.Cascade);   // If the branch is deleted, its products are also deleted
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.Branch)               // A product has one branch
+                .WithMany(b => b.Products)           // A branch has many products
+                .HasForeignKey(p => p.BranchId)      // The foreign key is BranchId
+                .OnDelete(DeleteBehavior.Cascade);   // If the branch is deleted, its products are also deleted
         }
     }
 }

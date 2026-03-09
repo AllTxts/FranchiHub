@@ -3,32 +3,32 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
+// Agregar servicios al contenedor
 builder.Services.AddControllers();
 
-// Get connection string: first from environment variable, then from appsettings.json
-string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// Obtener la cadena de conexión: primero de variable de entorno, luego de appsettings.json
+string connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING") ??
+                            builder.Configuration.GetConnectionString("DefaultConnection");
 
-// Configure DbContext with SQL Server
+// Configurar DbContext con SQL Server
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 options.UseSqlServer(connectionString));
 
-// Configure Swagger for API documentation
+// Configurar Swagger para documentación de API
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
+// Configurar pipeline de HTTP
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger(); // Enable Swagger in development
-    app.UseSwaggerUI(); // Swagger user interface
+    app.UseSwagger(); // Habilita Swagger en desarrollo
+    app.UseSwaggerUI(); // Interfaz de usuario de Swagger
 }
 
-app.UseHttpsRedirection(); // Redirect HTTP to HTTPS
-
-app.UseAuthorization(); // Authorization middleware
-app.MapControllers(); // Map controllers
+app.UseHttpsRedirection(); // Redirigir HTTP a HTTPS
+app.UseAuthorization(); // Middleware de autorización
+app.MapControllers(); // Mapear controladores
 
 app.Run();

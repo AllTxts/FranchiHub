@@ -15,6 +15,6 @@ namespace FranchiseManager.API.Models
         public string Name { get; set; } = string.Empty;
 
         // Relationship: one franchise has many branches
-        //public ICollection<Branch> Branches { get; set; } = new List<Branch>();
+        public ICollection<Branch> Branches { get; set; } = new List<Branch>();
     }
 }

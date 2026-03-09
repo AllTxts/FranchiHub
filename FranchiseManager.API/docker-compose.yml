@@ -1,0 +1,29 @@
+# Definición de redes personalizadas para la comunicación entre contenedores
+networks:
+  mynetworkapi:  # Red personalizada para que los servicios puedan comunicarse
+
+services:
+  # Servicio de SQL Server
+  sqlserverdocker:
+    container_name: sql-server-docker  # Nombre del contenedor
+    image: mcr.microsoft.com/mssql/server:2025-latest  # Imagen de SQL Server 2025
+    ports:
+      - 8006:1433  # Mapeo de puertos: [puerto_host]:[puerto_contenedor] (1433 es el puerto por defecto de SQL Server)
+    environment:
+      - ACCEPT_EULA=Y  # Aceptar los términos de licencia (obligatorio para SQL Server)
+      - MSSQL_SA_PASSWORD=Sql0411!@#  # Contraseña del usuario SA (administrador)
+    networks:
+      - mynetworkapi  # Conectar a la red personalizada
+
+  # Servicio de la API de FranchiseManager
+  franchisemanager.api:
+    image: ${DOCKER_REGISTRY-}franchisemanagerapi  # Nombre de la imagen (usa variable DOCKER_REGISTRY si existe)
+    build:
+      context: .  # Contexto de build: directorio actual
+      dockerfile: FranchiseManager.API/Dockerfile  # Ruta al Dockerfile
+    networks:
+      - mynetworkapi  # Conectar a la misma red que SQL Server
+    depends_on:
+      - sqlserverdocker  # Este servicio depende de que sqlserverdocker esté disponible
+    ports: 
+      - 5001:8081  # Mapeo de puertos: puerto_host 5001 -> puerto_contenedor 8081 (donde corre la API)

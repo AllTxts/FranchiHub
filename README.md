@@ -179,8 +179,6 @@ This backend follows a layered architecture:
 Melquin Rodriguez Sanabria
 Fullstack Developer "I Love Backend ;)"
 
-GitHub: @alltxts
-Email: alltxtscode@hotmail.com
+- GitHub: @alltxts
+- Email: alltxtscode@hotmail.com
 ---
-
-## 📁 Project Structure

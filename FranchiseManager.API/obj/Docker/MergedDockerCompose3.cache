@@ -1,0 +1,65 @@
+name: dockercompose11985950372055964919
+services:
+  franchisemanager.api:
+    build:
+      context: C:\Users\ThisLocation\Desktop\FranchiHub\FranchiseManager.API
+      dockerfile: FranchiseManager.API/Dockerfile
+    depends_on:
+      sqlserverdocker:
+        condition: service_started
+        required: true
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ASPNETCORE_HTTPS_PORTS: "8081"
+    image: franchisemanagerapi
+    networks:
+      mynetworkapi: null
+    ports:
+      - mode: ingress
+        target: 8081
+        published: "5001"
+        protocol: tcp
+      - mode: ingress
+        target: 8080
+        protocol: tcp
+      - mode: ingress
+        target: 8081
+        protocol: tcp
+    volumes:
+      - type: bind
+        source: C:\Users\ThisLocation\AppData\Roaming/Microsoft/UserSecrets
+        target: /home/app/.microsoft/usersecrets
+        read_only: true
+        bind: {}
+      - type: bind
+        source: C:\Users\ThisLocation\AppData\Roaming/Microsoft/UserSecrets
+        target: /root/.microsoft/usersecrets
+        read_only: true
+        bind: {}
+      - type: bind
+        source: C:\Users\ThisLocation\AppData\Roaming/ASP.NET/Https
+        target: /home/app/.aspnet/https
+        read_only: true
+        bind: {}
+      - type: bind
+        source: C:\Users\ThisLocation\AppData\Roaming/ASP.NET/Https
+        target: /root/.aspnet/https
+        read_only: true
+        bind: {}
+  sqlserverdocker:
+    container_name: sql-server-docker
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: Sql0411!@#
+    image: mcr.microsoft.com/mssql/server:2025-latest
+    networks:
+      mynetworkapi: null
+    ports:
+      - mode: ingress
+        target: 1433
+        published: "8006"
+        protocol: tcp
+networks:
+  mynetworkapi:
+    name: dockercompose11985950372055964919_mynetworkapi

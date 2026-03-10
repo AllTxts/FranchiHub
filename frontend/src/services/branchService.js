@@ -1,5 +1,6 @@
 import api from './api';
 
+// Service for handling branch-related API calls
 export const branchService = {
   // GET all branches
   getAll: async () => {

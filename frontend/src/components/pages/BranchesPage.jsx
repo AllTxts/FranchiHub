@@ -11,6 +11,7 @@ import { branchService } from '../../services/branchService';
 import { franchiseService } from '../../services/franchiseService';
 import { productService } from '../../services/productService';
 
+// Main branches page component
 const BranchesPage = () => {
   const [branches, setBranches] = useState([]);
   const [franchises, setFranchises] = useState([]);
@@ -33,6 +34,7 @@ const BranchesPage = () => {
     loadData();
   }, []);
 
+  // Fetch all data from API
   const loadData = async () => {
     try {
       setLoading(true);
@@ -102,6 +104,7 @@ const BranchesPage = () => {
     }
   };
 
+  // Create new branch
   const handleCreateBranch = async (newBranch) => {
     try {
       setError(null);
@@ -145,6 +148,7 @@ const BranchesPage = () => {
     }
   };
 
+  // Update existing branch
   const handleEditBranch = async (id, branchData) => {
     try {
       setError(null);
@@ -176,6 +180,7 @@ const BranchesPage = () => {
     }
   };
 
+  // Delete branch
   const handleDeleteBranch = async () => {
     if (!selectedBranch) return;
     
@@ -208,6 +213,7 @@ const BranchesPage = () => {
     }
   };
 
+  // Handlers for table actions
   const handleView = (id) => {
     console.log('View branch:', id);
     alert(`View branch ${id} - This would show branch details`);
@@ -319,7 +325,7 @@ const BranchesPage = () => {
         </button>
       </div>
 
-      {/* Branches Table */}
+      {/* Branches Table or Empty State */}
       {filteredBranches.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-12 text-center">
           <FaCodeBranch className="mx-auto text-gray-400 text-5xl mb-4" />

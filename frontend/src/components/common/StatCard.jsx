@@ -1,3 +1,4 @@
+// Reusable stat card component for displaying metrics
 const StatCard = ({ title, value, subtitle, icon, bgColor }) => {
   return (
     <div className="bg-white rounded-lg shadow p-6">
@@ -7,6 +8,7 @@ const StatCard = ({ title, value, subtitle, icon, bgColor }) => {
           <p className="text-3xl font-bold mt-2">{value}</p>
           {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
         </div>
+        {/* Icon container with custom background */}
         <div className={`${bgColor} p-3 rounded-full`}>
           {icon}
         </div>

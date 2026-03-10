@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 
+// Modal component for editing an existing branch
 const EditBranchModal = ({ isOpen, onClose, onEdit, branch, franchises = [] }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -7,6 +8,7 @@ const EditBranchModal = ({ isOpen, onClose, onEdit, branch, franchises = [] }) =
   });
   const [error, setError] = useState('');
 
+  // Populate form with branch data when modal opens
   useEffect(() => {
     if (isOpen && branch) {
       setFormData({
@@ -17,6 +19,7 @@ const EditBranchModal = ({ isOpen, onClose, onEdit, branch, franchises = [] }) =
     }
   }, [isOpen, branch]);
 
+  // Handle form submission with validation
   const handleSubmit = (e) => {
     e.preventDefault();
     
@@ -39,8 +42,10 @@ const EditBranchModal = ({ isOpen, onClose, onEdit, branch, franchises = [] }) =
   if (!isOpen || !branch) return null;
 
   return (
+    // Modal overlay
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-96">
+        {/* Modal header */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Edit Branch</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
@@ -50,12 +55,14 @@ const EditBranchModal = ({ isOpen, onClose, onEdit, branch, franchises = [] }) =
           </button>
         </div>
         
+        {/* Error message */}
         {error && (
           <div className="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
             {error}
           </div>
         )}
         
+        {/* Edit form */}
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -90,6 +97,7 @@ const EditBranchModal = ({ isOpen, onClose, onEdit, branch, franchises = [] }) =
             />
           </div>
           
+          {/* Form actions */}
           <div className="flex justify-end gap-2">
             <button
               type="button"

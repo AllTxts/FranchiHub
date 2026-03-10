@@ -1,14 +1,18 @@
+// Reusable confirmation modal component
 const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message, confirmText = "Delete", cancelText = "Cancel" }) => {
   if (!isOpen) return null;
 
   return (
+    // Modal overlay
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-96">
+        {/* Modal content */}
         <div className="mb-4">
           <h2 className="text-xl font-bold text-gray-900">{title}</h2>
           <p className="mt-2 text-gray-600">{message}</p>
         </div>
         
+        {/* Action buttons */}
         <div className="flex justify-end gap-2">
           <button
             onClick={onClose}

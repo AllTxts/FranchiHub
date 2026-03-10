@@ -1,29 +1,31 @@
 import axios from 'axios';
 
-// Cambia de HTTP a HTTPS
-const API_URL = 'https://localhost:5001/api'; // Nota el https://
+// API base URL - change to HTTPS for local development
+const API_URL = 'https://localhost:5001/api';
 
+// Create axios instance with default config
 const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  // Importante para desarrollo con certificados self-signed
+  // Important for development with self-signed certificates
   httpsAgent: {
     rejectUnauthorized: false
   }
 });
 
-// Log para debugging
+// Debug log
 console.log('API URL:', API_URL);
 
-// Interceptor para manejar errores
+// Response interceptor for error handling
 api.interceptors.response.use(
   (response) => {
     console.log('API Response:', response.status);
     return response;
   },
   (error) => {
+    // Handle different types of errors
     if (error.code === 'ERR_NETWORK') {
       console.error('Network Error - Make sure backend is running on:', API_URL);
     } else if (error.response) {

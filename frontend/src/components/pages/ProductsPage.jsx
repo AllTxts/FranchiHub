@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react';
 import { FaBox, FaCheckCircle, FaExclamationTriangle, FaTimesCircle } from 'react-icons/fa';
-import Layout from '../components/layout/Layout';
-import StatCard from '../components/common/StatCard';
-import SearchBar from '../components/common/SearchBar';
-import ProductTable from '../components/products/ProductTable';
-import NewProductModal from '../components/products/NewProductModal';
-import EditProductModal from '../components/products/EditProductModal';
-import UpdateStockModal from '../components/products/UpdateStockModal';
-import ConfirmModal from '../components/common/ConfirmModal';
-import { productService } from '../services/productService';
-import { branchService } from '../services/branchService';
+import Layout from '../layout/Layout';
+import StatCard from '../common/StatCard';
+import SearchBar from '../common/SearchBar';
+import ProductTable from '../products/ProductTable';
+import NewProductModal from '../products/NewProductModal';
+import EditProductModal from '../products/EditProductModal';
+import UpdateStockModal from '../products/UpdateStockModal';
+import ConfirmModal from '../common/ConfirmModal';
+import { productService } from '../../services/productService';
+import { branchService } from '../../services/branchService';
 
+// Main products page component
 const ProductsPage = () => {
   const [products, setProducts] = useState([]);
   const [branches, setBranches] = useState([]);
@@ -34,6 +35,7 @@ const ProductsPage = () => {
     loadData();
   }, []);
 
+  // Fetch all data from API
   const loadData = async () => {
     try {
       setLoading(true);
@@ -66,7 +68,7 @@ const ProductsPage = () => {
       setProducts(formattedProducts);
       setBranches(branchesData);
       
-      // Calculate stats
+      // Calculate stats based on stock levels
       const inStock = formattedProducts.filter(p => p.stock > 10).length;
       const lowStock = formattedProducts.filter(p => p.stock > 0 && p.stock <= 10).length;
       const outOfStock = formattedProducts.filter(p => p.stock === 0).length;
@@ -86,6 +88,7 @@ const ProductsPage = () => {
     }
   };
 
+  // Create new product
   const handleCreateProduct = async (newProduct) => {
     try {
       setError(null);
@@ -126,6 +129,7 @@ const ProductsPage = () => {
     }
   };
 
+  // Update existing product
   const handleEditProduct = async (id, productData) => {
     try {
       setError(null);
@@ -172,6 +176,7 @@ const ProductsPage = () => {
     }
   };
 
+  // Update product stock
   const handleUpdateStock = async (productId, newStock) => {
     try {
       setError(null);
@@ -209,6 +214,7 @@ const ProductsPage = () => {
     }
   };
 
+  // Delete product
   const handleDeleteProduct = async () => {
     if (!selectedProduct) return;
     
@@ -241,6 +247,7 @@ const ProductsPage = () => {
     }
   };
 
+  // Handlers for table actions
   const handleView = (id) => {
     console.log('View product:', id);
     alert(`View product ${id} - This would show product details`);
@@ -379,7 +386,7 @@ const ProductsPage = () => {
         </button>
       </div>
 
-      {/* Products Table */}
+      {/* Products Table or Empty State */}
       {filteredProducts.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-12 text-center">
           <FaBox className="mx-auto text-gray-400 text-5xl mb-4" />

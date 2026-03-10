@@ -1,5 +1,6 @@
 import { FaTrash } from 'react-icons/fa';
 
+// Component for rendering a single franchise row in the franchises table
 const FranchiseRow = ({ franchise, onView, onEdit, onDelete }) => {
   return (
     <tr className="hover:bg-gray-50">
@@ -9,9 +10,11 @@ const FranchiseRow = ({ franchise, onView, onEdit, onDelete }) => {
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
         {franchise.name}
       </td>
+      {/* Display branch count */}
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
         {franchise.branches} branches
       </td>
+      {/* Action buttons */}
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
         <button
           onClick={() => onView(franchise.id)}
@@ -29,7 +32,6 @@ const FranchiseRow = ({ franchise, onView, onEdit, onDelete }) => {
           onClick={() => onDelete(franchise)}
           className="text-red-600 hover:text-red-900"
         >
-          <FaTrash className="inline mr-1" />
           Delete
         </button>
       </td>

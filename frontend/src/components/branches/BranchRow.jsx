@@ -1,3 +1,4 @@
+// Component for rendering a single branch row in the branches table
 const BranchRow = ({ branch, onView, onEdit, onDelete }) => {
   return (
     <tr className="hover:bg-gray-50">
@@ -10,9 +11,11 @@ const BranchRow = ({ branch, onView, onEdit, onDelete }) => {
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
         {branch.name}
       </td>
+      {/* Display product count */}
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
         {branch.products} items
       </td>
+      {/* Action buttons */}
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
         <button
           onClick={() => onView(branch.id)}

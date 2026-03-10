@@ -1,5 +1,6 @@
 import StatusBadge from './StatusBadge';
 
+// Component for rendering a single product row in the products table
 const ProductRow = ({ product, onUpdateStock, onView, onEdit, onDelete }) => {
   return (
     <tr className="hover:bg-gray-50">
@@ -15,9 +16,11 @@ const ProductRow = ({ product, onUpdateStock, onView, onEdit, onDelete }) => {
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
         {product.stock}
       </td>
+      {/* Stock status badge */}
       <td className="px-6 py-4 whitespace-nowrap">
         <StatusBadge stock={product.stock} />
       </td>
+      {/* Action buttons */}
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
         <button
           onClick={() => onView(product.id)}

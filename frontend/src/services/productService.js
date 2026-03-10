@@ -1,5 +1,6 @@
 import api from './api';
 
+// Service for handling product-related API calls
 export const productService = {
   // GET all products
   getAll: async () => {

@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 
+// Modal component for updating product stock
 const UpdateStockModal = ({ isOpen, onClose, product, onUpdate }) => {
   const [stock, setStock] = useState(0);
   const [error, setError] = useState('');
 
+  // Set stock value when modal opens
   useEffect(() => {
     if (isOpen && product) {
       setStock(product.stock);
@@ -11,6 +13,7 @@ const UpdateStockModal = ({ isOpen, onClose, product, onUpdate }) => {
     }
   }, [isOpen, product]);
 
+  // Handle form submission with validation
   const handleSubmit = (e) => {
     e.preventDefault();
     
@@ -25,8 +28,10 @@ const UpdateStockModal = ({ isOpen, onClose, product, onUpdate }) => {
   if (!isOpen || !product) return null;
 
   return (
+    // Modal overlay
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-96">
+        {/* Modal header */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Update Stock</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
@@ -36,17 +41,20 @@ const UpdateStockModal = ({ isOpen, onClose, product, onUpdate }) => {
           </button>
         </div>
         
+        {/* Product info */}
         <div className="mb-4">
           <p className="text-sm text-gray-600">Product: <span className="font-medium">{product.name}</span></p>
           <p className="text-sm text-gray-600">Current Stock: <span className="font-medium">{product.stock}</span></p>
         </div>
         
+        {/* Error message */}
         {error && (
           <div className="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
             {error}
           </div>
         )}
         
+        {/* Stock update form */}
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -62,6 +70,7 @@ const UpdateStockModal = ({ isOpen, onClose, product, onUpdate }) => {
             />
           </div>
           
+          {/* Form actions */}
           <div className="flex justify-end gap-2">
             <button
               type="button"

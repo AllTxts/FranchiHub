@@ -1,13 +1,16 @@
 import { FaStore, FaCodeBranch, FaBox } from 'react-icons/fa';
 
+// Sidebar navigation component
 const Sidebar = ({ currentPage = 'franchises' }) => {
   return (
     <aside className="w-64 bg-gray-900 text-white h-screen fixed left-0 top-0 overflow-y-auto">
+      {/* App logo and title */}
       <div className="p-6">
         <h1 className="text-2xl font-bold text-orange-500">FRANCHIHUB</h1>
         <p className="text-xs text-gray-400 mt-1">MANAGEMENT SYSTEM</p>
       </div>
       
+      {/* Navigation links */}
       <nav className="mt-8">
         <a 
           href="/" 
@@ -44,6 +47,7 @@ const Sidebar = ({ currentPage = 'franchises' }) => {
         </a>
       </nav>
 
+      {/* Footer with current location */}
       <div className="absolute bottom-0 w-full p-6">
         <div className="text-xs text-gray-500">
           <p>MAIN</p>

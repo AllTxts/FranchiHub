@@ -11,6 +11,7 @@ import { franchiseService } from '../../services/franchiseService';
 import { branchService } from '../../services/branchService';
 import { productService } from '../../services/productService';
 
+// Main franchises page component
 const FranchisesPage = () => {
   const [franchises, setFranchises] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,10 +28,12 @@ const FranchisesPage = () => {
     lowStock: 0
   });
 
+  // Load data when component mounts
   useEffect(() => {
     loadFranchises();
   }, []);
 
+  // Fetch all data from API
   const loadFranchises = async () => {
     try {
       setLoading(true);
@@ -42,11 +45,13 @@ const FranchisesPage = () => {
         productService.getAll()
       ]);
       
+      // Count branches per franchise
       const branchesCount = branchesData.reduce((acc, branch) => {
         acc[branch.franchiseId] = (acc[branch.franchiseId] || 0) + 1;
         return acc;
       }, {});
       
+      // Format franchises with branch counts
       const formattedFranchises = franchisesData.map(f => ({
         id: f.id,
         name: f.name,
@@ -55,6 +60,7 @@ const FranchisesPage = () => {
       
       setFranchises(formattedFranchises);
       
+      // Calculate stats
       const lowStockProducts = productsData.filter(p => p.stock > 0 && p.stock <= 10).length;
       
       setStats({
@@ -72,6 +78,7 @@ const FranchisesPage = () => {
     }
   };
 
+  // Create new franchise
   const handleCreateFranchise = async (newFranchise) => {
     try {
       setError(null);
@@ -100,6 +107,7 @@ const FranchisesPage = () => {
     }
   };
 
+  // Update existing franchise
   const handleEditFranchise = async (id, franchiseData) => {
     try {
       setError(null);
@@ -124,6 +132,7 @@ const FranchisesPage = () => {
     }
   };
 
+  // Delete franchise
   const handleDeleteFranchise = async () => {
     if (!selectedFranchise) return;
     
@@ -151,9 +160,9 @@ const FranchisesPage = () => {
     }
   };
 
+  // Handlers for table actions
   const handleView = (id) => {
     console.log('View franchise:', id);
-    // Aquí podrías navegar a una página de detalle
     alert(`View franchise ${id} - This would show franchise details`);
   };
 
@@ -173,10 +182,12 @@ const FranchisesPage = () => {
     console.log('Searching for:', searchTerm);
   };
 
+  // Filter franchises based on search term
   const filteredFranchises = franchises.filter(f =>
     f.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Loading state
   if (loading) {
     return (
       <Layout currentPage="franchises">
@@ -260,7 +271,7 @@ const FranchisesPage = () => {
         </button>
       </div>
 
-      {/* Franchises Table */}
+      {/* Franchises Table or Empty State */}
       {filteredFranchises.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-12 text-center">
           <FaStore className="mx-auto text-gray-400 text-5xl mb-4" />

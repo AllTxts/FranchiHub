@@ -8,6 +8,7 @@ import NewProductModal from '../products/NewProductModal';
 import EditProductModal from '../products/EditProductModal';
 import UpdateStockModal from '../products/UpdateStockModal';
 import ConfirmModal from '../common/ConfirmModal';
+import ViewDetailsModal from '../common/ViewDetailsModal';
 import { productService } from '../../services/productService';
 import { branchService } from '../../services/branchService';
 
@@ -22,7 +23,9 @@ const ProductsPage = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isStockModalOpen, setIsStockModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [viewItem, setViewItem] = useState(null);
   const [stats, setStats] = useState({
     totalProducts: 0,
     inStock: 0,
@@ -249,8 +252,9 @@ const ProductsPage = () => {
 
   // Handlers for table actions
   const handleView = (id) => {
-    console.log('View product:', id);
-    alert(`View product ${id} - This would show product details`);
+    const product = products.find(p => p.id === id);
+    setViewItem(product);
+    setIsViewModalOpen(true);
   };
 
   const handleEdit = (id) => {
@@ -453,6 +457,16 @@ const ProductsPage = () => {
         message={`Are you sure you want to delete "${selectedProduct?.name}"? This action cannot be undone.`}
         confirmText="Delete"
         cancelText="Cancel"
+      />
+
+      <ViewDetailsModal
+        isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false);
+          setViewItem(null);
+        }}
+        item={viewItem}
+        type="product"
       />
     </Layout>
   );

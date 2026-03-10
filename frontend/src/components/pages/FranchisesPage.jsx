@@ -7,6 +7,7 @@ import FranchiseTable from '../franchises/FranchiseTable';
 import NewFranchiseModal from '../franchises/NewFranchiseModal';
 import EditFranchiseModal from '../franchises/EditFranchiseModal';
 import ConfirmModal from '../common/ConfirmModal';
+import ViewDetailsModal from '../common/ViewDetailsModal';
 import { franchiseService } from '../../services/franchiseService';
 import { branchService } from '../../services/branchService';
 import { productService } from '../../services/productService';
@@ -20,7 +21,9 @@ const FranchisesPage = () => {
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedFranchise, setSelectedFranchise] = useState(null);
+  const [viewItem, setViewItem] = useState(null);
   const [stats, setStats] = useState({
     totalFranchises: 0,
     totalBranches: 0,
@@ -162,8 +165,9 @@ const FranchisesPage = () => {
 
   // Handlers for table actions
   const handleView = (id) => {
-    console.log('View franchise:', id);
-    alert(`View franchise ${id} - This would show franchise details`);
+    const franchise = franchises.find(f => f.id === id);
+    setViewItem(franchise);
+    setIsViewModalOpen(true);
   };
 
   const handleEdit = (id) => {
@@ -325,6 +329,16 @@ const FranchisesPage = () => {
         message={`Are you sure you want to delete "${selectedFranchise?.name}"? This action cannot be undone.`}
         confirmText="Delete"
         cancelText="Cancel"
+      />
+
+      <ViewDetailsModal
+        isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false);
+          setViewItem(null);
+        }}
+        item={viewItem}
+        type="franchise"
       />
     </Layout>
   );

@@ -7,6 +7,7 @@ import BranchTable from '../branches/BranchTable';
 import NewBranchModal from '../branches/NewBranchModal';
 import EditBranchModal from '../branches/EditBranchModal';
 import ConfirmModal from '../common/ConfirmModal';
+import ViewDetailsModal from '../common/ViewDetailsModal';
 import { branchService } from '../../services/branchService';
 import { franchiseService } from '../../services/franchiseService';
 import { productService } from '../../services/productService';
@@ -21,7 +22,9 @@ const BranchesPage = () => {
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState(null);
+  const [viewItem, setViewItem] = useState(null);
   const [stats, setStats] = useState({
     totalBranches: 0,
     avgProducts: 0,
@@ -215,8 +218,9 @@ const BranchesPage = () => {
 
   // Handlers for table actions
   const handleView = (id) => {
-    console.log('View branch:', id);
-    alert(`View branch ${id} - This would show branch details`);
+    const branch = branches.find(b => b.id === id);
+    setViewItem(branch);
+    setIsViewModalOpen(true);
   };
 
   const handleEdit = (id) => {
@@ -381,6 +385,16 @@ const BranchesPage = () => {
         message={`Are you sure you want to delete "${selectedBranch?.name}"? This action cannot be undone.`}
         confirmText="Delete"
         cancelText="Cancel"
+      />
+
+      <ViewDetailsModal
+        isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false);
+          setViewItem(null);
+        }}
+        item={viewItem}
+        type="branch"
       />
     </Layout>
   );

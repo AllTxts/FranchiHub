@@ -159,5 +159,7 @@ Fullstack Developer
 - GitHub: @alltxts
 - Email: alltxtscode@gmail.com
 
+## If u have problems with the downloads folders.
+Greetings, the .rar file contains the Backend and Frontend folders if you have any problems with the separate folders. "FranchiHub-v1.0-Backend+Frontend"
 📄 License
 - This project is licensed under the MIT License - see the LICENSE file in backend and frontend folder for details.

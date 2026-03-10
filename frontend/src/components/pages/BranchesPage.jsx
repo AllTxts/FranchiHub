@@ -8,6 +8,8 @@ import NewBranchModal from '../branches/NewBranchModal';
 import EditBranchModal from '../branches/EditBranchModal';
 import ConfirmModal from '../common/ConfirmModal';
 import ViewDetailsModal from '../common/ViewDetailsModal';
+import Notification from '../common/Notification';
+import { useNotification } from '../hooks/useNotification';
 import { branchService } from '../../services/branchService';
 import { franchiseService } from '../../services/franchiseService';
 import { productService } from '../../services/productService';
@@ -25,6 +27,7 @@ const BranchesPage = () => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState(null);
   const [viewItem, setViewItem] = useState(null);
+  const { notification, showNotification, hideNotification } = useNotification();
   const [stats, setStats] = useState({
     totalBranches: 0,
     avgProducts: 0,
@@ -139,14 +142,21 @@ const BranchesPage = () => {
         avgProducts: newAvg
       }));
       
+      showNotification(`Branch "${created.name}" created successfully!`, 'success');
       setIsNewModalOpen(false);
       
     } catch (err) {
+      let errorMessage = 'Failed to create branch';
       if (err.response?.status === 409) {
-        setError('A branch with this name already exists in this franchise');
-      } else {
-        setError('Failed to create branch');
+        errorMessage = 'A branch with this name already exists in this franchise';
+      } else if (err.response?.data?.errors) {
+        const validationErrors = err.response.data.errors;
+        errorMessage = Object.values(validationErrors).flat().join(', ');
+      } else if (err.response?.data?.title) {
+        errorMessage = err.response.data.title;
       }
+      
+      showNotification(errorMessage, 'error');
       console.error('Error creating branch:', err);
     }
   };
@@ -170,15 +180,23 @@ const BranchesPage = () => {
       );
       
       setBranches(updatedBranches);
+      
+      showNotification(`Branch updated successfully!`, 'success');
       setIsEditModalOpen(false);
       setSelectedBranch(null);
       
     } catch (err) {
+      let errorMessage = 'Failed to update branch';
       if (err.response?.status === 409) {
-        setError('A branch with this name already exists in this franchise');
-      } else {
-        setError('Failed to update branch');
+        errorMessage = 'A branch with this name already exists in this franchise';
+      } else if (err.response?.data?.errors) {
+        const validationErrors = err.response.data.errors;
+        errorMessage = Object.values(validationErrors).flat().join(', ');
+      } else if (err.response?.data?.title) {
+        errorMessage = err.response.data.title;
       }
+      
+      showNotification(errorMessage, 'error');
       console.error('Error updating branch:', err);
     }
   };
@@ -207,11 +225,16 @@ const BranchesPage = () => {
         avgProducts: avgProducts
       }));
       
+      showNotification(`Branch "${selectedBranch.name}" deleted successfully!`, 'success');
       setIsDeleteModalOpen(false);
       setSelectedBranch(null);
       
     } catch (err) {
-      setError('Failed to delete branch');
+      let errorMessage = 'Failed to delete branch';
+      if (err.response?.status === 400) {
+        errorMessage = 'Cannot delete branch with existing products';
+      }
+      showNotification(errorMessage, 'error');
       console.error('Error deleting branch:', err);
     }
   };
@@ -396,6 +419,15 @@ const BranchesPage = () => {
         item={viewItem}
         type="branch"
       />
+
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          duration={notification.duration}
+          onClose={hideNotification}
+        />
+      )}
     </Layout>
   );
 };

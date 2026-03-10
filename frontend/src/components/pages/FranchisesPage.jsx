@@ -8,6 +8,8 @@ import NewFranchiseModal from '../franchises/NewFranchiseModal';
 import EditFranchiseModal from '../franchises/EditFranchiseModal';
 import ConfirmModal from '../common/ConfirmModal';
 import ViewDetailsModal from '../common/ViewDetailsModal';
+import Notification from '../common/Notification';
+import { useNotification } from '../hooks/useNotification';
 import { franchiseService } from '../../services/franchiseService';
 import { branchService } from '../../services/branchService';
 import { productService } from '../../services/productService';
@@ -24,6 +26,7 @@ const FranchisesPage = () => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedFranchise, setSelectedFranchise] = useState(null);
   const [viewItem, setViewItem] = useState(null);
+  const { notification, showNotification, hideNotification } = useNotification();
   const [stats, setStats] = useState({
     totalFranchises: 0,
     totalBranches: 0,
@@ -98,14 +101,21 @@ const FranchisesPage = () => {
         totalFranchises: prev.totalFranchises + 1
       }));
       
+      showNotification(`Franchise "${created.name}" created successfully!`, 'success');
       setIsNewModalOpen(false);
       
     } catch (err) {
+      let errorMessage = 'Failed to create franchise';
       if (err.response?.status === 409) {
-        setError('A franchise with this name already exists');
-      } else {
-        setError('Failed to create franchise');
+        errorMessage = 'A franchise with this name already exists';
+      } else if (err.response?.data?.errors) {
+        const validationErrors = err.response.data.errors;
+        errorMessage = Object.values(validationErrors).flat().join(', ');
+      } else if (err.response?.data?.title) {
+        errorMessage = err.response.data.title;
       }
+      
+      showNotification(errorMessage, 'error');
       console.error('Error creating franchise:', err);
     }
   };
@@ -122,15 +132,22 @@ const FranchisesPage = () => {
       );
       setFranchises(updatedFranchises);
       
+      showNotification(`Franchise updated successfully!`, 'success');
       setIsEditModalOpen(false);
       setSelectedFranchise(null);
       
     } catch (err) {
+      let errorMessage = 'Failed to update franchise';
       if (err.response?.status === 409) {
-        setError('A franchise with this name already exists');
-      } else {
-        setError('Failed to update franchise');
+        errorMessage = 'A franchise with this name already exists';
+      } else if (err.response?.data?.errors) {
+        const validationErrors = err.response.data.errors;
+        errorMessage = Object.values(validationErrors).flat().join(', ');
+      } else if (err.response?.data?.title) {
+        errorMessage = err.response.data.title;
       }
+      
+      showNotification(errorMessage, 'error');
       console.error('Error updating franchise:', err);
     }
   };
@@ -154,11 +171,16 @@ const FranchisesPage = () => {
         totalBranches: prev.totalBranches - selectedFranchise.branches
       }));
       
+      showNotification(`Franchise "${selectedFranchise.name}" deleted successfully!`, 'success');
       setIsDeleteModalOpen(false);
       setSelectedFranchise(null);
       
     } catch (err) {
-      setError('Failed to delete franchise');
+      let errorMessage = 'Failed to delete franchise';
+      if (err.response?.status === 400) {
+        errorMessage = 'Cannot delete franchise with existing branches';
+      }
+      showNotification(errorMessage, 'error');
       console.error('Error deleting franchise:', err);
     }
   };
@@ -340,6 +362,15 @@ const FranchisesPage = () => {
         item={viewItem}
         type="franchise"
       />
+
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          duration={notification.duration}
+          onClose={hideNotification}
+        />
+      )}
     </Layout>
   );
 };

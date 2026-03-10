@@ -16,17 +16,27 @@ const NewBranchModal = ({ isOpen, onClose, onCreate, franchises = [] }) => {
     }
   }, [isOpen]);
 
+  // Validate form
+  const validateForm = () => {
+    if (!formData.name.trim()) {
+      return 'Branch name is required';
+    }
+    if (formData.name.trim().length < 3) {
+      return 'Branch name must be at least 3 characters long';
+    }
+    if (!formData.franchiseId) {
+      return 'Please select a franchise';
+    }
+    return null;
+  };
+
   // Handle form submission with validation
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    if (!formData.name.trim()) {
-      setError('Branch name is required');
-      return;
-    }
-    
-    if (!formData.franchiseId) {
-      setError('Please select a franchise');
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
@@ -39,8 +49,8 @@ const NewBranchModal = ({ isOpen, onClose, onCreate, franchises = [] }) => {
   if (!isOpen) return null;
 
   return (
-    // Modal overlay
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    // Modal overlay with subtle blur
+    <div className="fixed inset-0 bg-black bg-opacity-20 backdrop-blur-[2px] flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-96">
         {/* Modal header */}
         <div className="flex justify-between items-center mb-4">

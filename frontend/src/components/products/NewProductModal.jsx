@@ -17,22 +17,30 @@ const NewProductModal = ({ isOpen, onClose, onCreate, branches = [] }) => {
     }
   }, [isOpen]);
 
+  // Validate form
+  const validateForm = () => {
+    if (!formData.name.trim()) {
+      return 'Product name is required';
+    }
+    if (formData.name.trim().length < 3) {
+      return 'Product name must be at least 3 characters long';
+    }
+    if (!formData.branchId) {
+      return 'Please select a branch';
+    }
+    if (formData.stock < 0) {
+      return 'Stock cannot be negative';
+    }
+    return null;
+  };
+
   // Handle form submission with validation
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    if (!formData.name.trim()) {
-      setError('Product name is required');
-      return;
-    }
-    
-    if (!formData.branchId) {
-      setError('Please select a branch');
-      return;
-    }
-
-    if (formData.stock < 0) {
-      setError('Stock cannot be negative');
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
@@ -46,8 +54,8 @@ const NewProductModal = ({ isOpen, onClose, onCreate, branches = [] }) => {
   if (!isOpen) return null;
 
   return (
-    // Modal overlay
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    // Modal overlay with subtle blur
+    <div className="fixed inset-0 bg-black bg-opacity-20 backdrop-blur-[2px] flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-96">
         {/* Modal header */}
         <div className="flex justify-between items-center mb-4">

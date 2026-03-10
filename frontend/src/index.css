@@ -1,2 +1,19 @@
 /* Import Tailwind CSS framework for styling */
 @import "tailwindcss";
+
+/* Keyframe animation for sliding in from the right */
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Utility class for slide-in animation */
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out;
+}

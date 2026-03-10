@@ -9,6 +9,8 @@ import EditProductModal from '../products/EditProductModal';
 import UpdateStockModal from '../products/UpdateStockModal';
 import ConfirmModal from '../common/ConfirmModal';
 import ViewDetailsModal from '../common/ViewDetailsModal';
+import Notification from '../common/Notification';
+import { useNotification } from '../hooks/useNotification';
 import { productService } from '../../services/productService';
 import { branchService } from '../../services/branchService';
 
@@ -26,6 +28,7 @@ const ProductsPage = () => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [viewItem, setViewItem] = useState(null);
+  const { notification, showNotification, hideNotification } = useNotification();
   const [stats, setStats] = useState({
     totalProducts: 0,
     inStock: 0,
@@ -120,14 +123,29 @@ const ProductsPage = () => {
       else newStats.inStock++;
       
       setStats(newStats);
+      
+      showNotification(`Product "${created.name}" created successfully!`, 'success');
       setIsNewModalOpen(false);
       
     } catch (err) {
+      let errorMessage = 'Failed to create product';
       if (err.response?.status === 409) {
-        setError('A product with this name already exists in this branch');
-      } else {
-        setError('Failed to create product');
+        errorMessage = 'A product with this name already exists in this branch';
+      } else if (err.response?.data?.errors) {
+        const validationErrors = err.response.data.errors;
+        // Check for specific validation errors
+        if (validationErrors.Name) {
+          errorMessage = validationErrors.Name[0];
+        } else if (validationErrors.Stock) {
+          errorMessage = validationErrors.Stock[0];
+        } else {
+          errorMessage = Object.values(validationErrors).flat().join(', ');
+        }
+      } else if (err.response?.data?.title) {
+        errorMessage = err.response.data.title;
       }
+      
+      showNotification(errorMessage, 'error');
       console.error('Error creating product:', err);
     }
   };
@@ -166,15 +184,28 @@ const ProductsPage = () => {
         outOfStock
       });
       
+      showNotification(`Product updated successfully!`, 'success');
       setIsEditModalOpen(false);
       setSelectedProduct(null);
       
     } catch (err) {
+      let errorMessage = 'Failed to update product';
       if (err.response?.status === 409) {
-        setError('A product with this name already exists in this branch');
-      } else {
-        setError('Failed to update product');
+        errorMessage = 'A product with this name already exists in this branch';
+      } else if (err.response?.data?.errors) {
+        const validationErrors = err.response.data.errors;
+        if (validationErrors.Name) {
+          errorMessage = validationErrors.Name[0];
+        } else if (validationErrors.Stock) {
+          errorMessage = validationErrors.Stock[0];
+        } else {
+          errorMessage = Object.values(validationErrors).flat().join(', ');
+        }
+      } else if (err.response?.data?.title) {
+        errorMessage = err.response.data.title;
       }
+      
+      showNotification(errorMessage, 'error');
       console.error('Error updating product:', err);
     }
   };
@@ -208,11 +239,19 @@ const ProductsPage = () => {
         outOfStock
       });
       
+      showNotification(`Stock updated successfully!`, 'success');
       setIsStockModalOpen(false);
       setSelectedProduct(null);
       
     } catch (err) {
-      setError('Failed to update stock');
+      let errorMessage = 'Failed to update stock';
+      if (err.response?.data?.errors) {
+        const validationErrors = err.response.data.errors;
+        if (validationErrors.stock) {
+          errorMessage = validationErrors.stock[0];
+        }
+      }
+      showNotification(errorMessage, 'error');
       console.error('Error updating stock:', err);
     }
   };
@@ -241,11 +280,13 @@ const ProductsPage = () => {
         outOfStock
       });
       
+      showNotification(`Product "${selectedProduct.name}" deleted successfully!`, 'success');
       setIsDeleteModalOpen(false);
       setSelectedProduct(null);
       
     } catch (err) {
-      setError('Failed to delete product');
+      let errorMessage = 'Failed to delete product';
+      showNotification(errorMessage, 'error');
       console.error('Error deleting product:', err);
     }
   };
@@ -468,6 +509,15 @@ const ProductsPage = () => {
         item={viewItem}
         type="product"
       />
+
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          duration={notification.duration}
+          onClose={hideNotification}
+        />
+      )}
     </Layout>
   );
 };

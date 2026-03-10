@@ -158,7 +158,7 @@ const BranchesPage = () => {
   }
 
   return (
-    <Layout>
+    <Layout currentPage="branches">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800">BRANCHES</h1>

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import FranchisesPage from './components/pages/FranchisesPage';
 import BranchesPage from './components/pages/BranchesPage';
+import ProductsPage from './components/pages/ProductsPage';
 
 function App() {
   return (
@@ -9,8 +10,7 @@ function App() {
         <Route path="/" element={<Navigate to="/franchises" replace />} />
         <Route path="/franchises" element={<FranchisesPage />} />
         <Route path="/branches" element={<BranchesPage />} />
-        {/* Products page will be added later */}
-        <Route path="/products" element={<div>Products Page - Coming Soon</div>} />
+        <Route path="/products" element={<ProductsPage />} />
       </Routes>
     </BrowserRouter>
   );

@@ -7,6 +7,7 @@ import BranchTable from '../branches/BranchTable';
 import NewBranchModal from '../branches/NewBranchModal';
 import { branchService } from '../../services/branchService';
 import { franchiseService } from '../../services/franchiseService';
+import { productService } from '../../services/productService';
 
 const BranchesPage = () => {
   const [branches, setBranches] = useState([]);
@@ -32,14 +33,22 @@ const BranchesPage = () => {
       setLoading(true);
       setError(null);
       
-      // Load both branches and franchises in parallel
-      const [branchesData, franchisesData] = await Promise.all([
+      // Load all data in parallel
+      const [branchesData, franchisesData, productsData] = await Promise.all([
         branchService.getAll(),
-        franchiseService.getAll()
+        franchiseService.getAll(),
+        productService.getAll()
       ]);
       
       console.log('Branches loaded:', branchesData);
       console.log('Franchises loaded:', franchisesData);
+      console.log('Products loaded:', productsData);
+      
+      // Count products per branch
+      const productsPerBranch = productsData.reduce((acc, product) => {
+        acc[product.branchId] = (acc[product.branchId] || 0) + 1;
+        return acc;
+      }, {});
       
       // Create a map of franchise names for quick lookup
       const franchiseMap = franchisesData.reduce((map, f) => {
@@ -47,29 +56,37 @@ const BranchesPage = () => {
         return map;
       }, {});
       
-      // Format branches with franchise names and product counts
+      // Format branches with franchise names and REAL product counts
       const formattedBranches = branchesData.map(b => ({
         id: b.id,
         name: b.name,
         franchiseId: b.franchiseId,
         franchiseName: franchiseMap[b.franchiseId] || 'Unknown',
-        products: b.productsCount || Math.floor(Math.random() * 30) + 5 // Temporary random data
+        products: productsPerBranch[b.id] || 0
       }));
       
       setBranches(formattedBranches);
       setFranchises(franchisesData);
       
-      // Calculate stats
+      // Calculate REAL stats
       const totalProducts = formattedBranches.reduce((sum, b) => sum + b.products, 0);
       const avgProducts = formattedBranches.length > 0 
         ? Math.round(totalProducts / formattedBranches.length) 
         : 0;
       
+      // Count branches with low stock products
+      const branchesWithLowStock = new Set();
+      productsData.forEach(product => {
+        if (product.stock > 0 && product.stock <= 10) {
+          branchesWithLowStock.add(product.branchId);
+        }
+      });
+      
       setStats({
         totalBranches: formattedBranches.length,
         avgProducts: avgProducts,
         active: formattedBranches.length, // All operational for now
-        stockAlerts: Math.floor(Math.random() * 5) + 1 // Random for demo
+        stockAlerts: branchesWithLowStock.size
       });
       
     } catch (err) {
@@ -146,7 +163,7 @@ const BranchesPage = () => {
   // Loading state
   if (loading) {
     return (
-      <Layout>
+      <Layout currentPage="branches">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
@@ -178,7 +195,7 @@ const BranchesPage = () => {
         </div>
       )}
 
-      {/* Stats Cards */}
+      {/* Stats Cards - AHORA CON DATOS REALES */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <StatCard
           title="TOTAL BRANCHES"
@@ -210,7 +227,7 @@ const BranchesPage = () => {
         />
       </div>
 
-      {/* Search and New Button */}
+      {/* Search and New Button (resto igual) */}
       <div className="flex justify-between items-center mb-6">
         <div className="w-96">
           <SearchBar

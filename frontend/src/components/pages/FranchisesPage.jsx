@@ -6,6 +6,8 @@ import SearchBar from '../common/SearchBar';
 import FranchiseTable from '../franchises/FranchiseTable';
 import NewFranchiseModal from '../franchises/NewFranchiseModal';
 import { franchiseService } from '../../services/franchiseService';
+import { branchService } from '../../services/branchService';
+import { productService } from '../../services/productService';
 
 const FranchisesPage = () => {
   const [franchises, setFranchises] = useState([]);
@@ -30,23 +32,41 @@ const FranchisesPage = () => {
       setLoading(true);
       setError(null);
       
-      const data = await franchiseService.getAll();
-      console.log('Franchises loaded:', data);
+      // Load all data in parallel
+      const [franchisesData, branchesData, productsData] = await Promise.all([
+        franchiseService.getAll(),
+        branchService.getAll(),
+        productService.getAll()
+      ]);
+      
+      console.log('Franchises loaded:', franchisesData);
+      console.log('Branches loaded:', branchesData);
+      console.log('Products loaded:', productsData);
+      
+      // Count branches per franchise
+      const branchesCount = branchesData.reduce((acc, branch) => {
+        acc[branch.franchiseId] = (acc[branch.franchiseId] || 0) + 1;
+        return acc;
+      }, {});
       
       // Transform data to match our frontend structure
-      const formattedFranchises = data.map(f => ({
+      const formattedFranchises = franchisesData.map(f => ({
         id: f.id,
         name: f.name,
-        branches: f.branchesCount || 0 // This will come from API later
+        branches: branchesCount[f.id] || 0
       }));
       
       setFranchises(formattedFranchises);
       
-      // Update stats
-      setStats(prev => ({
-        ...prev,
-        totalFranchises: data.length
-      }));
+      // Calculate REAL stats
+      const lowStockProducts = productsData.filter(p => p.stock > 0 && p.stock <= 10).length;
+      
+      setStats({
+        totalFranchises: franchisesData.length,
+        totalBranches: branchesData.length,
+        totalProducts: productsData.length,
+        lowStock: lowStockProducts
+      });
       
     } catch (err) {
       setError('Failed to load franchises. Is the backend running?');
@@ -120,7 +140,7 @@ const FranchisesPage = () => {
   }
 
   return (
-    <Layout>
+    <Layout currentPage="franchises">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800">FRANCHISES</h1>
@@ -140,7 +160,7 @@ const FranchisesPage = () => {
         </div>
       )}
 
-      {/* Stats Cards - Using real data where available */}
+      {/* Stats Cards - AHORA CON DATOS REALES */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <StatCard
           title="TOTAL FRANCHISES"
@@ -150,28 +170,28 @@ const FranchisesPage = () => {
         />
         <StatCard
           title="TOTAL BRANCHES"
-          value={stats.totalBranches || 13}
-          subtitle="+3 this month"
+          value={stats.totalBranches}
+          subtitle={`Across ${stats.totalFranchises} franchises`}
           icon={<FaCodeBranch className="text-green-500" size={24} />}
           bgColor="bg-green-100"
         />
         <StatCard
           title="TOTAL PRODUCTS"
-          value={stats.totalProducts || 51}
-          subtitle="+8 this month"
+          value={stats.totalProducts}
+          subtitle={`In ${stats.totalBranches} branches`}
           icon={<FaBox className="text-purple-500" size={24} />}
           bgColor="bg-purple-100"
         />
         <StatCard
           title="LOW STOCK"
-          value={stats.lowStock || 3}
-          subtitle="Needs attention"
+          value={stats.lowStock}
+          subtitle="Products need attention"
           icon={<FaExclamationTriangle className="text-yellow-500" size={24} />}
           bgColor="bg-yellow-100"
         />
       </div>
 
-      {/* Search and New Button */}
+      {/* Search and New Button (resto igual) */}
       <div className="flex justify-between items-center mb-6">
         <div className="w-96">
           <SearchBar

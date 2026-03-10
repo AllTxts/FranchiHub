@@ -5,6 +5,8 @@ import StatCard from '../common/StatCard';
 import SearchBar from '../common/SearchBar';
 import BranchTable from '../branches/BranchTable';
 import NewBranchModal from '../branches/NewBranchModal';
+import EditBranchModal from '../branches/EditBranchModal';
+import ConfirmModal from '../common/ConfirmModal';
 import { branchService } from '../../services/branchService';
 import { franchiseService } from '../../services/franchiseService';
 import { productService } from '../../services/productService';
@@ -15,7 +17,10 @@ const BranchesPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isNewModalOpen, setIsNewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedBranch, setSelectedBranch] = useState(null);
   const [stats, setStats] = useState({
     totalBranches: 0,
     avgProducts: 0,
@@ -128,7 +133,7 @@ const BranchesPage = () => {
         avgProducts: newAvg
       }));
       
-      setIsModalOpen(false);
+      setIsNewModalOpen(false);
       
     } catch (err) {
       if (err.response?.status === 409) {
@@ -140,14 +145,83 @@ const BranchesPage = () => {
     }
   };
 
+  const handleEditBranch = async (id, branchData) => {
+    try {
+      setError(null);
+      await branchService.update(id, branchData);
+      
+      // Update local state
+      const franchise = franchises.find(f => f.id === branchData.franchiseId);
+      
+      const updatedBranches = branches.map(b => 
+        b.id === id ? { 
+          ...b, 
+          name: branchData.name,
+          franchiseId: branchData.franchiseId,
+          franchiseName: franchise?.name || 'Unknown'
+        } : b
+      );
+      
+      setBranches(updatedBranches);
+      setIsEditModalOpen(false);
+      setSelectedBranch(null);
+      
+    } catch (err) {
+      if (err.response?.status === 409) {
+        setError('A branch with this name already exists in this franchise');
+      } else {
+        setError('Failed to update branch');
+      }
+      console.error('Error updating branch:', err);
+    }
+  };
+
+  const handleDeleteBranch = async () => {
+    if (!selectedBranch) return;
+    
+    try {
+      setError(null);
+      await branchService.delete(selectedBranch.id);
+      
+      // Remove from local state
+      const updatedBranches = branches.filter(b => b.id !== selectedBranch.id);
+      setBranches(updatedBranches);
+      
+      // Update stats
+      const totalProducts = updatedBranches.reduce((sum, b) => sum + b.products, 0);
+      const avgProducts = updatedBranches.length > 0 
+        ? Math.round(totalProducts / updatedBranches.length) 
+        : 0;
+      
+      setStats(prev => ({
+        ...prev,
+        totalBranches: updatedBranches.length,
+        avgProducts: avgProducts
+      }));
+      
+      setIsDeleteModalOpen(false);
+      setSelectedBranch(null);
+      
+    } catch (err) {
+      setError('Failed to delete branch');
+      console.error('Error deleting branch:', err);
+    }
+  };
+
   const handleView = (id) => {
     console.log('View branch:', id);
-    // Navigate to branch details
+    alert(`View branch ${id} - This would show branch details`);
   };
 
   const handleEdit = (id) => {
-    console.log('Edit branch:', id);
-    // Open edit modal
+    const branch = branches.find(b => b.id === id);
+    setSelectedBranch(branch);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDelete = (branch) => {
+    setSelectedBranch(branch);
+    setIsDeleteModalOpen(true);
   };
 
   const handleSearch = () => {
@@ -195,7 +269,7 @@ const BranchesPage = () => {
         </div>
       )}
 
-      {/* Stats Cards - AHORA CON DATOS REALES */}
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <StatCard
           title="TOTAL BRANCHES"
@@ -227,7 +301,7 @@ const BranchesPage = () => {
         />
       </div>
 
-      {/* Search and New Button (resto igual) */}
+      {/* Search and New Button */}
       <div className="flex justify-between items-center mb-6">
         <div className="w-96">
           <SearchBar
@@ -238,7 +312,7 @@ const BranchesPage = () => {
           />
         </div>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => setIsNewModalOpen(true)}
           className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 flex items-center transition-colors"
         >
           + New Branch
@@ -255,7 +329,7 @@ const BranchesPage = () => {
           </p>
           {!searchTerm && (
             <button
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => setIsNewModalOpen(true)}
               className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 inline-flex items-center"
             >
               + New Branch
@@ -267,15 +341,40 @@ const BranchesPage = () => {
           branches={filteredBranches}
           onView={handleView}
           onEdit={handleEdit}
+          onDelete={handleDelete}
         />
       )}
 
-      {/* New Branch Modal */}
+      {/* Modals */}
       <NewBranchModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isNewModalOpen}
+        onClose={() => setIsNewModalOpen(false)}
         onCreate={handleCreateBranch}
         franchises={franchises}
+      />
+
+      <EditBranchModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedBranch(null);
+        }}
+        onEdit={handleEditBranch}
+        branch={selectedBranch}
+        franchises={franchises}
+      />
+
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setSelectedBranch(null);
+        }}
+        onConfirm={handleDeleteBranch}
+        title="Delete Branch"
+        message={`Are you sure you want to delete "${selectedBranch?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
       />
     </Layout>
   );

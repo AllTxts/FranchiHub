@@ -1,4 +1,4 @@
-const BranchRow = ({ branch, onView, onEdit }) => {
+const BranchRow = ({ branch, onView, onEdit, onDelete }) => {
   return (
     <tr className="hover:bg-gray-50">
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -22,9 +22,15 @@ const BranchRow = ({ branch, onView, onEdit }) => {
         </button>
         <button
           onClick={() => onEdit(branch.id)}
-          className="text-gray-600 hover:text-gray-900"
+          className="text-gray-600 hover:text-gray-900 mr-3"
         >
           Edit
+        </button>
+        <button
+          onClick={() => onDelete(branch)}
+          className="text-red-600 hover:text-red-900"
+        >
+          Delete
         </button>
       </td>
     </tr>

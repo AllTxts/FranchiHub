@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { FaBox, FaCheckCircle, FaExclamationTriangle, FaTimesCircle } from 'react-icons/fa';
-import Layout from '../layout/Layout';
-import StatCard from '../common/StatCard';
-import SearchBar from '../common/SearchBar';
-import ProductTable from '../products/ProductTable';
-import NewProductModal from '../products/NewProductModal';
-import UpdateStockModal from '../products/UpdateStockModal';
-import { productService } from '../../services/productService';
-import { branchService } from '../../services/branchService';
+import Layout from '../components/layout/Layout';
+import StatCard from '../components/common/StatCard';
+import SearchBar from '../components/common/SearchBar';
+import ProductTable from '../components/products/ProductTable';
+import NewProductModal from '../components/products/NewProductModal';
+import EditProductModal from '../components/products/EditProductModal';
+import UpdateStockModal from '../components/products/UpdateStockModal';
+import ConfirmModal from '../components/common/ConfirmModal';
+import { productService } from '../services/productService';
+import { branchService } from '../services/branchService';
 
 const ProductsPage = () => {
   const [products, setProducts] = useState([]);
@@ -16,7 +18,9 @@ const ProductsPage = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isStockModalOpen, setIsStockModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [stats, setStats] = useState({
     totalProducts: 0,
@@ -122,6 +126,52 @@ const ProductsPage = () => {
     }
   };
 
+  const handleEditProduct = async (id, productData) => {
+    try {
+      setError(null);
+      await productService.update(id, productData);
+      
+      // Find branch name
+      const branch = branches.find(b => b.id === productData.branchId);
+      
+      // Update local state
+      const updatedProducts = products.map(p => 
+        p.id === id ? { 
+          ...p, 
+          name: productData.name,
+          stock: productData.stock,
+          branchId: productData.branchId,
+          branchName: branch?.name || 'Unknown'
+        } : p
+      );
+      
+      setProducts(updatedProducts);
+      
+      // Recalculate stats
+      const inStock = updatedProducts.filter(p => p.stock > 10).length;
+      const lowStock = updatedProducts.filter(p => p.stock > 0 && p.stock <= 10).length;
+      const outOfStock = updatedProducts.filter(p => p.stock === 0).length;
+      
+      setStats({
+        totalProducts: updatedProducts.length,
+        inStock,
+        lowStock,
+        outOfStock
+      });
+      
+      setIsEditModalOpen(false);
+      setSelectedProduct(null);
+      
+    } catch (err) {
+      if (err.response?.status === 409) {
+        setError('A product with this name already exists in this branch');
+      } else {
+        setError('Failed to update product');
+      }
+      console.error('Error updating product:', err);
+    }
+  };
+
   const handleUpdateStock = async (productId, newStock) => {
     try {
       setError(null);
@@ -159,9 +209,57 @@ const ProductsPage = () => {
     }
   };
 
+  const handleDeleteProduct = async () => {
+    if (!selectedProduct) return;
+    
+    try {
+      setError(null);
+      await productService.delete(selectedProduct.id);
+      
+      // Remove from local state
+      const updatedProducts = products.filter(p => p.id !== selectedProduct.id);
+      setProducts(updatedProducts);
+      
+      // Recalculate stats
+      const inStock = updatedProducts.filter(p => p.stock > 10).length;
+      const lowStock = updatedProducts.filter(p => p.stock > 0 && p.stock <= 10).length;
+      const outOfStock = updatedProducts.filter(p => p.stock === 0).length;
+      
+      setStats({
+        totalProducts: updatedProducts.length,
+        inStock,
+        lowStock,
+        outOfStock
+      });
+      
+      setIsDeleteModalOpen(false);
+      setSelectedProduct(null);
+      
+    } catch (err) {
+      setError('Failed to delete product');
+      console.error('Error deleting product:', err);
+    }
+  };
+
+  const handleView = (id) => {
+    console.log('View product:', id);
+    alert(`View product ${id} - This would show product details`);
+  };
+
   const handleEdit = (id) => {
-    console.log('Edit product:', id);
-    // Open edit modal (optional)
+    const product = products.find(p => p.id === id);
+    setSelectedProduct(product);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDelete = (product) => {
+    setSelectedProduct(product);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleUpdateStockClick = (product) => {
+    setSelectedProduct(product);
+    setIsStockModalOpen(true);
   };
 
   const handleSearch = async () => {
@@ -301,15 +399,14 @@ const ProductsPage = () => {
       ) : (
         <ProductTable
           products={filteredProducts}
-          onUpdateStock={(product) => {
-            setSelectedProduct(product);
-            setIsStockModalOpen(true);
-          }}
+          onUpdateStock={handleUpdateStockClick}
+          onView={handleView}
           onEdit={handleEdit}
+          onDelete={handleDelete}
         />
       )}
 
-      {/* New Product Modal */}
+      {/* Modals */}
       <NewProductModal
         isOpen={isNewModalOpen}
         onClose={() => setIsNewModalOpen(false)}
@@ -317,7 +414,17 @@ const ProductsPage = () => {
         branches={branches}
       />
 
-      {/* Update Stock Modal */}
+      <EditProductModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedProduct(null);
+        }}
+        onEdit={handleEditProduct}
+        product={selectedProduct}
+        branches={branches}
+      />
+
       <UpdateStockModal
         isOpen={isStockModalOpen}
         onClose={() => {
@@ -326,6 +433,19 @@ const ProductsPage = () => {
         }}
         product={selectedProduct}
         onUpdate={handleUpdateStock}
+      />
+
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setSelectedProduct(null);
+        }}
+        onConfirm={handleDeleteProduct}
+        title="Delete Product"
+        message={`Are you sure you want to delete "${selectedProduct?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
       />
     </Layout>
   );

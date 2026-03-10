@@ -5,6 +5,8 @@ import StatCard from '../common/StatCard';
 import SearchBar from '../common/SearchBar';
 import FranchiseTable from '../franchises/FranchiseTable';
 import NewFranchiseModal from '../franchises/NewFranchiseModal';
+import EditFranchiseModal from '../franchises/EditFranchiseModal';
+import ConfirmModal from '../common/ConfirmModal';
 import { franchiseService } from '../../services/franchiseService';
 import { branchService } from '../../services/branchService';
 import { productService } from '../../services/productService';
@@ -14,7 +16,10 @@ const FranchisesPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isNewModalOpen, setIsNewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedFranchise, setSelectedFranchise] = useState(null);
   const [stats, setStats] = useState({
     totalFranchises: 0,
     totalBranches: 0,
@@ -22,7 +27,6 @@ const FranchisesPage = () => {
     lowStock: 0
   });
 
-  // Load franchises when component mounts
   useEffect(() => {
     loadFranchises();
   }, []);
@@ -32,24 +36,17 @@ const FranchisesPage = () => {
       setLoading(true);
       setError(null);
       
-      // Load all data in parallel
       const [franchisesData, branchesData, productsData] = await Promise.all([
         franchiseService.getAll(),
         branchService.getAll(),
         productService.getAll()
       ]);
       
-      console.log('Franchises loaded:', franchisesData);
-      console.log('Branches loaded:', branchesData);
-      console.log('Products loaded:', productsData);
-      
-      // Count branches per franchise
       const branchesCount = branchesData.reduce((acc, branch) => {
         acc[branch.franchiseId] = (acc[branch.franchiseId] || 0) + 1;
         return acc;
       }, {});
       
-      // Transform data to match our frontend structure
       const formattedFranchises = franchisesData.map(f => ({
         id: f.id,
         name: f.name,
@@ -58,7 +55,6 @@ const FranchisesPage = () => {
       
       setFranchises(formattedFranchises);
       
-      // Calculate REAL stats
       const lowStockProducts = productsData.filter(p => p.stock > 0 && p.stock <= 10).length;
       
       setStats({
@@ -80,20 +76,19 @@ const FranchisesPage = () => {
     try {
       setError(null);
       const created = await franchiseService.create(newFranchise);
-      console.log('Franchise created:', created);
       
-      // Add new franchise to the list
       setFranchises([...franchises, { 
         id: created.id, 
         name: created.name,
         branches: 0 
       }]);
       
-      // Update stats
       setStats(prev => ({
         ...prev,
         totalFranchises: prev.totalFranchises + 1
       }));
+      
+      setIsNewModalOpen(false);
       
     } catch (err) {
       if (err.response?.status === 409) {
@@ -105,27 +100,83 @@ const FranchisesPage = () => {
     }
   };
 
+  const handleEditFranchise = async (id, franchiseData) => {
+    try {
+      setError(null);
+      await franchiseService.update(id, franchiseData);
+      
+      // Update local state
+      const updatedFranchises = franchises.map(f => 
+        f.id === id ? { ...f, name: franchiseData.name } : f
+      );
+      setFranchises(updatedFranchises);
+      
+      setIsEditModalOpen(false);
+      setSelectedFranchise(null);
+      
+    } catch (err) {
+      if (err.response?.status === 409) {
+        setError('A franchise with this name already exists');
+      } else {
+        setError('Failed to update franchise');
+      }
+      console.error('Error updating franchise:', err);
+    }
+  };
+
+  const handleDeleteFranchise = async () => {
+    if (!selectedFranchise) return;
+    
+    try {
+      setError(null);
+      await franchiseService.delete(selectedFranchise.id);
+      
+      // Remove from local state
+      const updatedFranchises = franchises.filter(f => f.id !== selectedFranchise.id);
+      setFranchises(updatedFranchises);
+      
+      // Update stats
+      setStats(prev => ({
+        ...prev,
+        totalFranchises: prev.totalFranchises - 1,
+        totalBranches: prev.totalBranches - selectedFranchise.branches
+      }));
+      
+      setIsDeleteModalOpen(false);
+      setSelectedFranchise(null);
+      
+    } catch (err) {
+      setError('Failed to delete franchise');
+      console.error('Error deleting franchise:', err);
+    }
+  };
+
   const handleView = (id) => {
     console.log('View franchise:', id);
-    // Navigate to franchise details
+    // Aquí podrías navegar a una página de detalle
+    alert(`View franchise ${id} - This would show franchise details`);
   };
 
   const handleEdit = (id) => {
-    console.log('Edit franchise:', id);
-    // Open edit modal
+    const franchise = franchises.find(f => f.id === id);
+    setSelectedFranchise(franchise);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDelete = (franchise) => {
+    setSelectedFranchise(franchise);
+    setIsDeleteModalOpen(true);
   };
 
   const handleSearch = () => {
-    // Client-side filtering for now
+    // Client-side filtering
     console.log('Searching for:', searchTerm);
   };
 
-  // Filter franchises based on search term
   const filteredFranchises = franchises.filter(f =>
     f.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Loading state
   if (loading) {
     return (
       <Layout currentPage="franchises">
@@ -160,7 +211,7 @@ const FranchisesPage = () => {
         </div>
       )}
 
-      {/* Stats Cards - AHORA CON DATOS REALES */}
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <StatCard
           title="TOTAL FRANCHISES"
@@ -191,7 +242,7 @@ const FranchisesPage = () => {
         />
       </div>
 
-      {/* Search and New Button (resto igual) */}
+      {/* Search and New Button */}
       <div className="flex justify-between items-center mb-6">
         <div className="w-96">
           <SearchBar
@@ -202,7 +253,7 @@ const FranchisesPage = () => {
           />
         </div>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => setIsNewModalOpen(true)}
           className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 flex items-center transition-colors"
         >
           + New Franchise
@@ -219,7 +270,7 @@ const FranchisesPage = () => {
           </p>
           {!searchTerm && (
             <button
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => setIsNewModalOpen(true)}
               className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 inline-flex items-center"
             >
               + New Franchise
@@ -231,14 +282,38 @@ const FranchisesPage = () => {
           franchises={filteredFranchises}
           onView={handleView}
           onEdit={handleEdit}
+          onDelete={handleDelete}
         />
       )}
 
-      {/* New Franchise Modal */}
+      {/* Modals */}
       <NewFranchiseModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isNewModalOpen}
+        onClose={() => setIsNewModalOpen(false)}
         onCreate={handleCreateFranchise}
+      />
+
+      <EditFranchiseModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedFranchise(null);
+        }}
+        onEdit={handleEditFranchise}
+        franchise={selectedFranchise}
+      />
+
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setSelectedFranchise(null);
+        }}
+        onConfirm={handleDeleteFranchise}
+        title="Delete Franchise"
+        message={`Are you sure you want to delete "${selectedFranchise?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
       />
     </Layout>
   );

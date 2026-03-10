@@ -1,6 +1,6 @@
 import FranchiseRow from './FranchiseRow';
 
-const FranchiseTable = ({ franchises, onView, onEdit }) => {
+const FranchiseTable = ({ franchises, onView, onEdit, onDelete }) => {
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <table className="min-w-full divide-y divide-gray-200">
@@ -19,6 +19,7 @@ const FranchiseTable = ({ franchises, onView, onEdit }) => {
               franchise={franchise}
               onView={onView}
               onEdit={onEdit}
+              onDelete={onDelete}
             />
           ))}
         </tbody>

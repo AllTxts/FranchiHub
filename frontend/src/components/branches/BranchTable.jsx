@@ -1,6 +1,6 @@
 import BranchRow from './BranchRow';
 
-const BranchTable = ({ branches, onView, onEdit }) => {
+const BranchTable = ({ branches, onView, onEdit, onDelete }) => {
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <table className="min-w-full divide-y divide-gray-200">
@@ -20,6 +20,7 @@ const BranchTable = ({ branches, onView, onEdit }) => {
               branch={branch}
               onView={onView}
               onEdit={onEdit}
+              onDelete={onDelete}
             />
           ))}
         </tbody>

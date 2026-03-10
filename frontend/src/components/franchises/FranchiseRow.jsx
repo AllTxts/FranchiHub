@@ -1,4 +1,6 @@
-const FranchiseRow = ({ franchise, onView, onEdit }) => {
+import { FaTrash } from 'react-icons/fa';
+
+const FranchiseRow = ({ franchise, onView, onEdit, onDelete }) => {
   return (
     <tr className="hover:bg-gray-50">
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -19,9 +21,16 @@ const FranchiseRow = ({ franchise, onView, onEdit }) => {
         </button>
         <button
           onClick={() => onEdit(franchise.id)}
-          className="text-gray-600 hover:text-gray-900"
+          className="text-gray-600 hover:text-gray-900 mr-3"
         >
           Edit
+        </button>
+        <button
+          onClick={() => onDelete(franchise)}
+          className="text-red-600 hover:text-red-900"
+        >
+          <FaTrash className="inline mr-1" />
+          Delete
         </button>
       </td>
     </tr>

@@ -1,6 +1,6 @@
 import ProductRow from './ProductRow';
 
-const ProductTable = ({ products, onUpdateStock, onEdit }) => {
+const ProductTable = ({ products, onUpdateStock, onView, onEdit, onDelete }) => {
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <table className="min-w-full divide-y divide-gray-200">
@@ -20,7 +20,9 @@ const ProductTable = ({ products, onUpdateStock, onEdit }) => {
               key={product.id}
               product={product}
               onUpdateStock={onUpdateStock}
+              onView={onView}
               onEdit={onEdit}
+              onDelete={onDelete}
             />
           ))}
         </tbody>
